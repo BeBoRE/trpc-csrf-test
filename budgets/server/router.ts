@@ -59,7 +59,7 @@ export const appRouter = t.router({
       users.set(user.username, user);
 
       ctx.res.headers({
-        "Set-Cookie": `user=${user.id}; HttpOnly; Path=/`,
+        "Set-Cookie": `user=${user.id}; HttpOnly; Path=/; SameSite=Strict;`,
       });
     }),
   user: privateProcedure.query(({ ctx: { user } }) => {

